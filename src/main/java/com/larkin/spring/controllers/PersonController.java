@@ -1,41 +1,48 @@
 package com.larkin.spring.controllers;
 
-import com.larkin.spring.dao.PersonDao;
 import com.larkin.spring.models.Person;
+import com.larkin.spring.services.BookService;
+import com.larkin.spring.services.PersonService;
 import com.larkin.spring.util.PersonValidator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/people")
-public class PeopleController {
+public class PersonController {
 
-    private final PersonDao personDao;
+    private final PersonService personService;
+    private final BookService bookService;
     private final PersonValidator personValidator;
 
     @Autowired
-    public PeopleController(PersonDao personDao, PersonValidator personValidator) {
-        this.personDao = personDao;
+    public PersonController(PersonService personService, BookService bookService, PersonValidator personValidator) {
+        this.personService = personService;
+        this.bookService = bookService;
         this.personValidator = personValidator;
     }
 
     @GetMapping()
     public String index(Model model) {
-        // Get all people from DAO and transfer them for displaying in the view
-        model.addAttribute("people", personDao.index());
+        model.addAttribute("people", personService.findAll());
         return "people/index";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") int id,
                        Model model) {
-        // Get one person by id from DAO and transfer this person in the view
-        model.addAttribute("person", personDao.show(id));
-        model.addAttribute("books", personDao.getBooksByPersonId(id));
+        Person person = personService.findById(id);
+        if (person == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found");
+        }
+        model.addAttribute("person", person);
+        model.addAttribute("books", bookService.findBooksByPerson(person));
         return "people/show";
     }
 
@@ -51,13 +58,13 @@ public class PeopleController {
         if (bindingResult.hasErrors()) {
             return "people/new";
         }
-        personDao.save(person);
+        personService.save(person);
         return "redirect:/people";
     }
 
     @GetMapping("/{id}/edit")
     public String edit(Model model, @PathVariable("id") int id) {
-        model.addAttribute("person", personDao.show(id));
+        model.addAttribute("person", personService.findById(id));
         return "people/edit";
     }
 
@@ -68,13 +75,13 @@ public class PeopleController {
         if (bindingResult.hasErrors()) {
             return "people/edit";
         }
-        personDao.update(id, person);
+        personService.update(id, person);
         return "redirect:/people";
     }
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable("id") int id) {
-        personDao.delete(id);
+        personService.deleteById(id);
         return "redirect:/people";
     }
 }

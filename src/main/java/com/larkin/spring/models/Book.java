@@ -1,17 +1,23 @@
 package com.larkin.spring.models;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
+
+@Getter
+@Setter
+@ToString(exclude = "person")
 @NoArgsConstructor
-@Builder
+@Entity
 public class Book {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotEmpty(message = "Title should not be empty.")
@@ -28,5 +34,18 @@ public class Book {
     @Max(value = 2025, message = "The year of publication must be less than 2025")
     private Integer year;
 
-    private Integer personId;
+    @Column(name = "borrowed_at")
+    private LocalDateTime borrowedAt;
+
+    @Transient
+    private boolean isExpired;
+
+    @ManyToOne
+    private Person person;
+
+    public Book(String title, String author, Integer year) {
+        this.title = title;
+        this.author = author;
+        this.year = year;
+    }
 }

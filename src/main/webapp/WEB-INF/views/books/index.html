@@ -5,14 +5,64 @@
     <title>Books</title>
 </head>
 <body>
-<div th:each="book : ${books}">
-    <a th:href="@{books/{id}(id=${book.getId()})}"
-       th:text="${book.getTitle() + ', ' + book.getAuthor() + ', ' + book.getYear()}">book</a>
-</div>
 
+<h1>Book List</h1>
+
+<form th:method="GET" th:action="@{/books}">
+    <label for="page">Page:</label>
+    <input type="number" id="page" name="page"
+           th:value="${currentPage}" min="0"/>
+
+    <label for="books_per_page">Books per page:</label>
+    <input type="number" id="books_per_page" name="books_per_page"
+           th:value="${currentBooksPerPage}" min="10"/>
+
+    <label for="sort_by_year">Sort by year:</label>
+    <input type="checkbox" id="sort_by_year" name="sort_by_year"
+           th:checked="${currentSortByYear}"/>
+
+    <button type="submit">Apply</button>
+    <a th:href="@{/books}">
+        <button type="button">Reset</button>
+    </a>
+</form>
+<br/>
+<a href="/books/search">Search a book</a>
 <br/>
 <hr/>
 
+<div th:if="${books.isEmpty()}">
+    <p>No books available.</p>
+</div>
+
+<ul>
+    <li th:each="book : ${books}">
+        <a th:href="@{books/{id}(id=${book.getId()})}"
+           th:text="${book.getTitle() + ', ' + book.getAuthor() + ', ' + book.getYear()}">
+            book
+        </a>
+    </li>
+</ul>
+
+<div>
+    <div class="d-flex justify-content-between mt-3">
+        <button th:if="${currentPage > 0}"
+                class="btn btn-primary"
+                th:onclick="|window.location.href='@{/books(page=${currentPage - 1}, books_per_page=${currentBooksPerPage}, sort_by_year=${currentSortByYear})}'|">
+            ← Previous
+        </button>
+
+        <button th:if="${currentPage + 1 < totalPages}"
+                class="btn btn-primary"
+                th:onclick="|window.location.href='@{/books(page=${currentPage + 1}, books_per_page=${currentBooksPerPage}, sort_by_year=${currentSortByYear})}'|">
+            Next →
+        </button>
+    </div>
+</div>
+
 <a href="/books/new">Add a book</a>
+<br/>
+<a href="/library">Go back to the main page</a>
+
 </body>
 </html>

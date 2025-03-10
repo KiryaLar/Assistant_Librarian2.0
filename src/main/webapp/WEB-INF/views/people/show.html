@@ -18,12 +18,19 @@
     <b>Books:</b>
     <br/>
     <table th:each="book : ${books}">
-        <tr th:text="${book.getTitle()} + ', ' + ${book.getAuthor()} + ', ' + ${book.getYear()}">book</tr>
+        <tr>
+            <td>
+                <span th:text="${book.getTitle()} + ', ' + ${book.getAuthor()} + ', ' + ${book.getYear()}"
+                      th:style="${book.isExpired()} ? 'color: red;' : ''">
+                    book
+            </span>
+            </td>
+        </tr>
     </table>
 </div>
 
 <form th:method="GET" th:action="@{/people/{id}/edit(id=${person.getId()})}">
-<input type="submit" value="Edit">
+    <input type="submit" value="Edit">
 </form>
 
 <form th:method="DELETE" th:action="@{/people/{id}(id=${person.getId()})}">
